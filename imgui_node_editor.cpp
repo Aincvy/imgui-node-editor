@@ -3597,7 +3597,11 @@ ed::EditorAction::AcceptResult ed::SelectAction::Accept(const Control& control)
                 Editor->ClearSelection();
             }
 
-            if (io.KeyCtrl)
+#if __APPLE__
+            if (io.KeySuper)     // super in apple.  
+#else
+            if (io.KeyCtrl )      
+#endif
                 Editor->ToggleObjectSelection(clickedObject);
             else
                 Editor->SetSelectedObject(clickedObject);
