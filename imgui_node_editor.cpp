@@ -1907,6 +1907,15 @@ ed::Link* ed::EditorContext::FindLinkAt(const ImVec2& p)
     return nullptr;
 }
 
+void ed::EditorContext::SetZoom(float value) {
+    // m_NavigateAction.StopNavigation();
+
+    // m_NavigateAction.m_Zoom = value;
+    // auto target =  m_Canvas.CalcViewRect(ImGuiEx::CanvasView(m_NavigateAction.GetViewOrigin(), value));
+    // m_NavigateAction.NavigateTo(target, false, 0.15f, NavigateAction::NavigationReason::MouseZoom);
+    m_NavigateAction.SetZoom(value);
+}
+
 ImU32 ed::EditorContext::GetColor(StyleColor colorIndex) const
 {
     return ImColor(m_Style.Colors[colorIndex]);
@@ -2978,27 +2987,34 @@ bool ed::NavigateAction::HandleZoom(const Control& control)
     if (!io.MouseWheel || (!allowOffscreen && !ImGui::IsWindowHovered()))// && !ImGui::IsAnyItemActive())
         return false;
 
+    auto steps    = (int)io.MouseWheel;
+    auto newZoom  = MatchZoom(steps, s_ZoomLevels[steps < 0 ? 0 : s_ZoomLevelCount - 1]);
+
+    SetZoom(newZoom);
+
+    return true;
+}
+
+void ed::NavigateAction::SetZoom(float newZoom) {
+    auto& io = ImGui::GetIO();
+
     auto savedScroll = m_Scroll;
-    auto savedZoom   = m_Zoom;
+    auto savedZoom = m_Zoom;
 
     m_Animation.Finish();
 
     auto mousePos = io.MousePos;
-    auto steps    = (int)io.MouseWheel;
-    auto newZoom  = MatchZoom(steps, s_ZoomLevels[steps < 0 ? 0 : s_ZoomLevelCount - 1]);
-
-    auto oldView   = GetView();
+    auto oldView = GetView();
     m_Zoom = newZoom;
-    auto newView   = GetView();
+    auto newView = GetView();
 
     auto screenPos = m_Canvas.FromLocal(mousePos, oldView);
     auto canvasPos = m_Canvas.ToLocal(screenPos, newView);
 
-    auto offset       = (canvasPos - mousePos) * m_Zoom;
+    auto offset = (canvasPos - mousePos) * m_Zoom;
     auto targetScroll = m_Scroll - offset;
 
-    if (m_Scroll != savedScroll || m_Zoom != savedZoom)
-    {
+    if (m_Scroll != savedScroll || m_Zoom != savedZoom) {
         m_Scroll = savedScroll;
         m_Zoom = savedZoom;
 
@@ -3008,8 +3024,6 @@ bool ed::NavigateAction::HandleZoom(const Control& control)
     auto targetRect = m_Canvas.CalcViewRect(ImGuiEx::CanvasView(-targetScroll, newZoom));
 
     NavigateTo(targetRect, c_MouseZoomDuration, NavigationReason::MouseZoom);
-
-    return true;
 }
 
 void ed::NavigateAction::ShowMetrics()

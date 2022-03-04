@@ -831,6 +831,8 @@ struct NavigateAction final: EditorAction
     void SetViewRect(const ImRect& rect);
     ImRect GetViewRect() const;
 
+    void SetZoom(float newZoom);
+
 private:
     ImGuiEx::Canvas&   m_Canvas;
     ImVec2 m_WindowScreenPos;
@@ -1326,6 +1328,8 @@ struct EditorContext
     Link*  GetLink(LinkId id);
 
     Link* FindLinkAt(const ImVec2& p);
+
+    void SetZoom(float value);
 
     template <typename T>
     ImRect GetBounds(const std::vector<T*>& objects)
