@@ -98,6 +98,8 @@ struct value
     void push_back(const value& value);
     void push_back(value&& value);
 
+    const object& underlyingObject() const;
+
     size_t erase(const string& key);
 
     bool is_primitive()  const { return is_string() || is_number() || is_boolean() || is_null(); }

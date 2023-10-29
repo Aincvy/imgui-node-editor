@@ -152,6 +152,10 @@ void value::push_back(value&& value)
     }
 }
 
+const object& value::underlyingObject() const {
+    return *object_ptr(m_Storage);
+}
+
 size_t value::erase(const string& key)
 {
     if (!is_object())
